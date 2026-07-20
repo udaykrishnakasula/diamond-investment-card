@@ -208,15 +208,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
 
   const onPointerMove = useCallback(
     (e: PointerEvent<HTMLDivElement>) => {
-      if (!draggingRef.current) {
-        // Subtle mouse parallax when not dragging.
-        const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-        const px = (e.clientX - rect.left) / rect.width - 0.5;
-        const py = (e.clientY - rect.top) / rect.height - 0.5;
-        rotY.set(REST_Y + px * 14);
-        rotX.set(REST_X + -py * 10);
-        return;
-      }
+      if (!draggingRef.current) return;
       const dx = e.clientX - lastRef.current.x;
       const dy = e.clientY - lastRef.current.y;
       lastRef.current = { x: e.clientX, y: e.clientY };
@@ -226,6 +218,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
     },
     [rotX, rotY],
   );
+
 
   const endDrag = useCallback(
     (e: PointerEvent<HTMLDivElement>) => {
