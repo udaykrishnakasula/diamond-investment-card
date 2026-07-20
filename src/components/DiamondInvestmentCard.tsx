@@ -124,8 +124,8 @@ function ProgressRing({ value }: { value: number }) {
         />
         <defs>
           <linearGradient id="diamondRing" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#bfe5ff" />
-            <stop offset="100%" stopColor="#4f9dff" />
+            <stop offset="0%" stopColor="#8fa3bd" />
+            <stop offset="100%" stopColor="#334155" />
           </linearGradient>
         </defs>
       </svg>
@@ -270,7 +270,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
           className="pointer-events-none absolute -inset-6 rounded-[36px]"
           style={{
             background:
-              "radial-gradient(60% 55% at 50% 55%, rgba(79,157,255,0.55) 0%, rgba(79,157,255,0) 70%)",
+              "radial-gradient(60% 55% at 50% 55%, rgba(200,215,235,0.75) 0%, rgba(200,215,235,0) 70%)",
             filter: "blur(24px)",
           }}
           animate={{ opacity: [0.45, 0.75, 0.45] }}
@@ -304,7 +304,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
                     className="text-[15px] leading-none"
                     style={{
                       background:
-                        "linear-gradient(180deg,#eaf6ff 0%,#8fc4ff 100%)",
+                        "linear-gradient(180deg,#64748b 0%,#0f172a 100%)",
                       WebkitBackgroundClip: "text",
                       backgroundClip: "text",
                       color: "transparent",
@@ -329,7 +329,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
                     className="mt-1 text-[34px] font-semibold leading-none tracking-tight"
                     style={{
                       background:
-                        "linear-gradient(180deg,#ffffff 0%,#b9dcff 100%)",
+                        "linear-gradient(180deg,#1e293b 0%,#64748b 100%)",
                       WebkitBackgroundClip: "text",
                       backgroundClip: "text",
                       color: "transparent",
@@ -362,7 +362,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
                     className="text-[15px] font-semibold"
                     style={{
                       background:
-                        "linear-gradient(180deg,#d6efff 0%,#5aa9ff 100%)",
+                        "linear-gradient(180deg,#334155 0%,#0f172a 100%)",
                       WebkitBackgroundClip: "text",
                       backgroundClip: "text",
                       color: "transparent",
