@@ -59,22 +59,25 @@ function CardFace({ children, back = false }: FaceProps) {
         transform: back ? "rotateY(180deg)" : undefined,
         backfaceVisibility: "hidden",
         WebkitBackfaceVisibility: "hidden",
-        // Layered metallic diamond-blue finish.
+        // Layered diamond/platinum finish — clear, icy, prismatic.
         backgroundImage: [
           // Top gloss
-          "linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 40%)",
-          // Cool steel body
-          "linear-gradient(160deg, #0b1a2e 0%, #12314f 25%, #1e5a8a 55%, #0e2542 100%)",
-          // Diamond blue sheen
-          "radial-gradient(120% 80% at 20% 10%, rgba(140,200,255,0.35) 0%, rgba(140,200,255,0) 55%)",
-          "radial-gradient(80% 60% at 90% 90%, rgba(60,120,200,0.4) 0%, rgba(60,120,200,0) 60%)",
+          "linear-gradient(135deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 45%)",
+          // Prismatic hint (very subtle rainbow refraction)
+          "linear-gradient(115deg, rgba(255,210,230,0.18) 0%, rgba(210,230,255,0.18) 35%, rgba(220,255,235,0.18) 65%, rgba(255,240,210,0.18) 100%)",
+          // Platinum body
+          "linear-gradient(160deg, #e9eef5 0%, #f6f8fb 25%, #c8d1dc 55%, #eef2f7 100%)",
+          // Icy sheen
+          "radial-gradient(120% 80% at 20% 10%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 55%)",
+          "radial-gradient(80% 60% at 90% 90%, rgba(180,200,220,0.55) 0%, rgba(180,200,220,0) 60%)",
         ].join(","),
         boxShadow: [
-          "inset 0 0 0 1px rgba(255,255,255,0.18)",
-          "inset 0 1px 0 rgba(255,255,255,0.35)",
-          "inset 0 -1px 0 rgba(0,0,0,0.4)",
+          "inset 0 0 0 1px rgba(255,255,255,0.6)",
+          "inset 0 1px 0 rgba(255,255,255,0.8)",
+          "inset 0 -1px 0 rgba(120,140,170,0.35)",
         ].join(","),
       }}
+
     >
       {/* Noise grain */}
       <div
@@ -234,22 +237,18 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
       } catch {
         // ignore
       }
-      // Smoothly return to default viewing angle.
-      rotX.set(REST_X);
-      rotY.set(REST_Y);
+      // Hold position — do NOT snap back. Card stays wherever the user left it.
     },
-    [rotX, rotY],
+    [],
   );
 
   const onPointerLeave = useCallback(
-    (e: PointerEvent<HTMLDivElement>) => {
-      if (draggingRef.current) return;
-      rotX.set(REST_X);
-      rotY.set(REST_Y);
-      void e;
+    (_e: PointerEvent<HTMLDivElement>) => {
+      // Do not reset when the pointer leaves — keep current rotation.
     },
-    [rotX, rotY],
+    [],
   );
+
 
   return (
     <div
