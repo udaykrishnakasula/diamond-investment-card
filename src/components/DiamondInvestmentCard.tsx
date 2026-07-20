@@ -59,22 +59,25 @@ function CardFace({ children, back = false }: FaceProps) {
         transform: back ? "rotateY(180deg)" : undefined,
         backfaceVisibility: "hidden",
         WebkitBackfaceVisibility: "hidden",
-        // Layered metallic diamond-blue finish.
+        // Layered diamond/platinum finish — clear, icy, prismatic.
         backgroundImage: [
           // Top gloss
-          "linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 40%)",
-          // Cool steel body
-          "linear-gradient(160deg, #0b1a2e 0%, #12314f 25%, #1e5a8a 55%, #0e2542 100%)",
-          // Diamond blue sheen
-          "radial-gradient(120% 80% at 20% 10%, rgba(140,200,255,0.35) 0%, rgba(140,200,255,0) 55%)",
-          "radial-gradient(80% 60% at 90% 90%, rgba(60,120,200,0.4) 0%, rgba(60,120,200,0) 60%)",
+          "linear-gradient(135deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 45%)",
+          // Prismatic hint (very subtle rainbow refraction)
+          "linear-gradient(115deg, rgba(255,210,230,0.18) 0%, rgba(210,230,255,0.18) 35%, rgba(220,255,235,0.18) 65%, rgba(255,240,210,0.18) 100%)",
+          // Platinum body
+          "linear-gradient(160deg, #e9eef5 0%, #f6f8fb 25%, #c8d1dc 55%, #eef2f7 100%)",
+          // Icy sheen
+          "radial-gradient(120% 80% at 20% 10%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 55%)",
+          "radial-gradient(80% 60% at 90% 90%, rgba(180,200,220,0.55) 0%, rgba(180,200,220,0) 60%)",
         ].join(","),
         boxShadow: [
-          "inset 0 0 0 1px rgba(255,255,255,0.18)",
-          "inset 0 1px 0 rgba(255,255,255,0.35)",
-          "inset 0 -1px 0 rgba(0,0,0,0.4)",
+          "inset 0 0 0 1px rgba(255,255,255,0.6)",
+          "inset 0 1px 0 rgba(255,255,255,0.8)",
+          "inset 0 -1px 0 rgba(120,140,170,0.35)",
         ].join(","),
       }}
+
     >
       {/* Noise grain */}
       <div
@@ -121,12 +124,12 @@ function ProgressRing({ value }: { value: number }) {
         />
         <defs>
           <linearGradient id="diamondRing" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#bfe5ff" />
-            <stop offset="100%" stopColor="#4f9dff" />
+            <stop offset="0%" stopColor="#8fa3bd" />
+            <stop offset="100%" stopColor="#334155" />
           </linearGradient>
         </defs>
       </svg>
-      <div className="absolute inset-0 grid place-items-center text-[11px] font-semibold tracking-wide text-white/90">
+      <div className="absolute inset-0 grid place-items-center text-[11px] font-semibold tracking-wide text-slate-900">
         {value}%
       </div>
     </div>
@@ -136,15 +139,15 @@ function ProgressRing({ value }: { value: number }) {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between text-[12px]">
-      <span className="uppercase tracking-[0.14em] text-white/55">{label}</span>
-      <span className="font-medium text-white/95">{value}</span>
+      <span className="uppercase tracking-[0.14em] text-slate-600">{label}</span>
+      <span className="font-medium text-slate-900">{value}</span>
     </div>
   );
 }
 
 function StatusPill({ label }: { label: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/90 backdrop-blur-md">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-900/20 bg-white/40 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-900 backdrop-blur-md">
       <span className="relative flex h-1.5 w-1.5">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-70" />
         <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
@@ -205,15 +208,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
 
   const onPointerMove = useCallback(
     (e: PointerEvent<HTMLDivElement>) => {
-      if (!draggingRef.current) {
-        // Subtle mouse parallax when not dragging.
-        const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-        const px = (e.clientX - rect.left) / rect.width - 0.5;
-        const py = (e.clientY - rect.top) / rect.height - 0.5;
-        rotY.set(REST_Y + px * 14);
-        rotX.set(REST_X + -py * 10);
-        return;
-      }
+      if (!draggingRef.current) return;
       const dx = e.clientX - lastRef.current.x;
       const dy = e.clientY - lastRef.current.y;
       lastRef.current = { x: e.clientX, y: e.clientY };
@@ -223,6 +218,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
     },
     [rotX, rotY],
   );
+
 
   const endDrag = useCallback(
     (e: PointerEvent<HTMLDivElement>) => {
@@ -234,22 +230,18 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
       } catch {
         // ignore
       }
-      // Smoothly return to default viewing angle.
-      rotX.set(REST_X);
-      rotY.set(REST_Y);
+      // Hold position — do NOT snap back. Card stays wherever the user left it.
     },
-    [rotX, rotY],
+    [],
   );
 
   const onPointerLeave = useCallback(
-    (e: PointerEvent<HTMLDivElement>) => {
-      if (draggingRef.current) return;
-      rotX.set(REST_X);
-      rotY.set(REST_Y);
-      void e;
+    (_e: PointerEvent<HTMLDivElement>) => {
+      // Do not reset when the pointer leaves — keep current rotation.
     },
-    [rotX, rotY],
+    [],
   );
+
 
   return (
     <div
@@ -278,7 +270,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
           className="pointer-events-none absolute -inset-6 rounded-[36px]"
           style={{
             background:
-              "radial-gradient(60% 55% at 50% 55%, rgba(79,157,255,0.55) 0%, rgba(79,157,255,0) 70%)",
+              "radial-gradient(60% 55% at 50% 55%, rgba(200,215,235,0.75) 0%, rgba(200,215,235,0) 70%)",
             filter: "blur(24px)",
           }}
           animate={{ opacity: [0.45, 0.75, 0.45] }}
@@ -312,7 +304,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
                     className="text-[15px] leading-none"
                     style={{
                       background:
-                        "linear-gradient(180deg,#eaf6ff 0%,#8fc4ff 100%)",
+                        "linear-gradient(180deg,#64748b 0%,#0f172a 100%)",
                       WebkitBackgroundClip: "text",
                       backgroundClip: "text",
                       color: "transparent",
@@ -320,7 +312,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
                   >
                     ◆
                   </span>
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-white/85">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-800">
                     Diamond
                   </span>
                 </div>
@@ -330,14 +322,14 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
               {/* Middle */}
               <div className="flex items-end justify-between">
                 <div>
-                  <div className="text-[10px] uppercase tracking-[0.2em] text-white/50">
+                  <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500">
                     Investment
                   </div>
                   <div
                     className="mt-1 text-[34px] font-semibold leading-none tracking-tight"
                     style={{
                       background:
-                        "linear-gradient(180deg,#ffffff 0%,#b9dcff 100%)",
+                        "linear-gradient(180deg,#1e293b 0%,#64748b 100%)",
                       WebkitBackgroundClip: "text",
                       backgroundClip: "text",
                       color: "transparent",
@@ -345,7 +337,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
                   >
                     {DUMMY.front.investment}
                   </div>
-                  <div className="mt-2 text-[11px] uppercase tracking-[0.18em] text-white/55">
+                  <div className="mt-2 text-[11px] uppercase tracking-[0.18em] text-slate-600">
                     Plan · {DUMMY.front.plan}
                   </div>
                 </div>
@@ -353,24 +345,24 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
               </div>
 
               {/* Footer */}
-              <div className="flex items-end justify-between border-t border-white/10 pt-3">
+              <div className="flex items-end justify-between border-t border-slate-900/10 pt-3">
                 <div>
-                  <div className="text-[9px] uppercase tracking-[0.2em] text-white/50">
+                  <div className="text-[9px] uppercase tracking-[0.2em] text-slate-500">
                     Lock Period
                   </div>
-                  <div className="text-[13px] font-medium text-white/95">
+                  <div className="text-[13px] font-medium text-slate-900">
                     {DUMMY.front.lockPeriod}
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[9px] uppercase tracking-[0.2em] text-white/50">
+                  <div className="text-[9px] uppercase tracking-[0.2em] text-slate-500">
                     Return
                   </div>
                   <div
                     className="text-[15px] font-semibold"
                     style={{
                       background:
-                        "linear-gradient(180deg,#d6efff 0%,#5aa9ff 100%)",
+                        "linear-gradient(180deg,#334155 0%,#0f172a 100%)",
                       WebkitBackgroundClip: "text",
                       backgroundClip: "text",
                       color: "transparent",
@@ -406,7 +398,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
           <CardFace back>
             <div className="relative flex h-full w-full flex-col justify-between p-5">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-white/85">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-800">
                   Certificate
                 </span>
                 <StatusPill label={DUMMY.back.status} />
@@ -420,11 +412,11 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
                 <Row label="Expected Return" value={DUMMY.back.expectedReturn} />
               </div>
 
-              <div className="flex items-center justify-between border-t border-white/10 pt-3">
-                <span className="text-[10px] uppercase tracking-[0.24em] text-white/50">
+              <div className="flex items-center justify-between border-t border-slate-900/10 pt-3">
+                <span className="text-[10px] uppercase tracking-[0.24em] text-slate-500">
                   Diamond Reserve
                 </span>
-                <span className="text-[10px] tracking-[0.2em] text-white/60">
+                <span className="text-[10px] tracking-[0.2em] text-slate-600">
                   ◆ ◆ ◆
                 </span>
               </div>
