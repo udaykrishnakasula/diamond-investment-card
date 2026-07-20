@@ -129,7 +129,7 @@ function ProgressRing({ value }: { value: number }) {
           </linearGradient>
         </defs>
       </svg>
-      <div className="absolute inset-0 grid place-items-center text-[11px] font-semibold tracking-wide text-white/90">
+      <div className="absolute inset-0 grid place-items-center text-[11px] font-semibold tracking-wide text-slate-900">
         {value}%
       </div>
     </div>
@@ -139,15 +139,15 @@ function ProgressRing({ value }: { value: number }) {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between text-[12px]">
-      <span className="uppercase tracking-[0.14em] text-white/55">{label}</span>
-      <span className="font-medium text-white/95">{value}</span>
+      <span className="uppercase tracking-[0.14em] text-slate-600">{label}</span>
+      <span className="font-medium text-slate-900">{value}</span>
     </div>
   );
 }
 
 function StatusPill({ label }: { label: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/90 backdrop-blur-md">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-900/20 bg-white/40 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-900 backdrop-blur-md">
       <span className="relative flex h-1.5 w-1.5">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-70" />
         <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
@@ -312,7 +312,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
                   >
                     ◆
                   </span>
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-white/85">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-800">
                     Diamond
                   </span>
                 </div>
@@ -322,7 +322,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
               {/* Middle */}
               <div className="flex items-end justify-between">
                 <div>
-                  <div className="text-[10px] uppercase tracking-[0.2em] text-white/50">
+                  <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500">
                     Investment
                   </div>
                   <div
@@ -337,7 +337,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
                   >
                     {DUMMY.front.investment}
                   </div>
-                  <div className="mt-2 text-[11px] uppercase tracking-[0.18em] text-white/55">
+                  <div className="mt-2 text-[11px] uppercase tracking-[0.18em] text-slate-600">
                     Plan · {DUMMY.front.plan}
                   </div>
                 </div>
@@ -345,17 +345,17 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
               </div>
 
               {/* Footer */}
-              <div className="flex items-end justify-between border-t border-white/10 pt-3">
+              <div className="flex items-end justify-between border-t border-slate-900/10 pt-3">
                 <div>
-                  <div className="text-[9px] uppercase tracking-[0.2em] text-white/50">
+                  <div className="text-[9px] uppercase tracking-[0.2em] text-slate-500">
                     Lock Period
                   </div>
-                  <div className="text-[13px] font-medium text-white/95">
+                  <div className="text-[13px] font-medium text-slate-900">
                     {DUMMY.front.lockPeriod}
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[9px] uppercase tracking-[0.2em] text-white/50">
+                  <div className="text-[9px] uppercase tracking-[0.2em] text-slate-500">
                     Return
                   </div>
                   <div
@@ -398,7 +398,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
           <CardFace back>
             <div className="relative flex h-full w-full flex-col justify-between p-5">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-white/85">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-800">
                   Certificate
                 </span>
                 <StatusPill label={DUMMY.back.status} />
@@ -412,11 +412,11 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
                 <Row label="Expected Return" value={DUMMY.back.expectedReturn} />
               </div>
 
-              <div className="flex items-center justify-between border-t border-white/10 pt-3">
-                <span className="text-[10px] uppercase tracking-[0.24em] text-white/50">
+              <div className="flex items-center justify-between border-t border-slate-900/10 pt-3">
+                <span className="text-[10px] uppercase tracking-[0.24em] text-slate-500">
                   Diamond Reserve
                 </span>
-                <span className="text-[10px] tracking-[0.2em] text-white/60">
+                <span className="text-[10px] tracking-[0.2em] text-slate-600">
                   ◆ ◆ ◆
                 </span>
               </div>
