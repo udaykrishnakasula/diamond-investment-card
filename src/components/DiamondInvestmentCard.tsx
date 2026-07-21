@@ -362,7 +362,20 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
                     Diamond
                   </span>
                 </div>
-                <StatusPill label={DUMMY.front.status} />
+                <div className="flex items-center gap-2">
+                  {/* Chip glyph */}
+                  <div
+                    aria-hidden
+                    className="h-[18px] w-[24px] rounded-[4px]"
+                    style={{
+                      backgroundImage:
+                        "conic-gradient(from 20deg at 50% 50%, #ffffff 0deg, #dfeaf7 60deg, #e6dff7 120deg, #fef2dc 180deg, #dff0fa 240deg, #e9e0f7 300deg, #ffffff 360deg), linear-gradient(160deg,#eef4fb,#dbe6f3)",
+                      boxShadow:
+                        "inset 0 0 0 1px rgba(255,255,255,0.7), inset 0 0 0 2px rgba(90,120,160,0.25)",
+                    }}
+                  />
+                  <StatusPill label={DUMMY.front.status} />
+                </div>
               </div>
 
               {/* Middle */}
@@ -398,6 +411,9 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
                   </div>
                   <div className="text-[13px] font-medium text-slate-900">
                     {DUMMY.front.lockPeriod}
+                  </div>
+                  <div className="mt-1 font-mono text-[9px] tracking-[0.2em] text-slate-500">
+                    ··· 0001
                   </div>
                 </div>
                 <div className="text-right">
@@ -443,31 +459,199 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
           {/* BACK */}
           <CardFace back>
             <div className="relative flex h-full w-full flex-col justify-between p-5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-800">
-                  Certificate
-                </span>
-                <StatusPill label={DUMMY.back.status} />
+              {/* Header band */}
+              <div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="text-[13px] leading-none"
+                      style={{
+                        background:
+                          "linear-gradient(180deg,#64748b 0%,#0f172a 100%)",
+                        WebkitBackgroundClip: "text",
+                        backgroundClip: "text",
+                        color: "transparent",
+                      }}
+                    >
+                      ◆
+                    </span>
+                    <span
+                      className="text-[10px] font-semibold uppercase tracking-[0.32em]"
+                      style={{
+                        background:
+                          "linear-gradient(180deg,#1e293b 0%,#64748b 100%)",
+                        WebkitBackgroundClip: "text",
+                        backgroundClip: "text",
+                        color: "transparent",
+                      }}
+                    >
+                      Diamond Reserve
+                    </span>
+                  </div>
+                  <StatusPill label={DUMMY.back.status} />
+                </div>
+                {/* Notched hairline divider */}
+                <div className="relative mt-2 flex items-center">
+                  <span className="h-px flex-1 bg-slate-900/15" />
+                  <span className="mx-1.5 text-[8px] text-slate-500">◆</span>
+                  <span className="h-px flex-1 bg-slate-900/15" />
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Row label="Investor" value={DUMMY.back.investorName} />
-                <Row label="ID" value={DUMMY.back.investmentId} />
-                <Row label="Start" value={DUMMY.back.startDate} />
-                <Row label="Maturity" value={DUMMY.back.maturityDate} />
-                <Row label="Expected Return" value={DUMMY.back.expectedReturn} />
+              {/* Investor hero */}
+              <div>
+                <div className="text-[9px] uppercase tracking-[0.24em] text-slate-500">
+                  Certificate Holder
+                </div>
+                <div
+                  className="mt-0.5 text-[22px] font-semibold leading-none tracking-tight"
+                  style={{
+                    background:
+                      "linear-gradient(180deg,#1e293b 0%,#64748b 100%)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    color: "transparent",
+                  }}
+                >
+                  {DUMMY.back.investorName}
+                </div>
+                <div className="mt-2 inline-flex rounded-md border border-slate-900/15 bg-white/30 px-2 py-0.5 backdrop-blur-[2px]">
+                  <span className="font-mono text-[10px] tracking-[0.24em] text-slate-800">
+                    {DUMMY.back.investmentId}
+                  </span>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between border-t border-slate-900/10 pt-3">
-                <span className="text-[10px] uppercase tracking-[0.24em] text-slate-500">
-                  Diamond Reserve
-                </span>
-                <span className="text-[10px] tracking-[0.2em] text-slate-600">
-                  ◆ ◆ ◆
-                </span>
+              {/* Timeline strip */}
+              <div className="relative">
+                <div className="mb-1 flex items-center justify-between text-[8px] uppercase tracking-[0.24em] text-slate-500">
+                  <span>Start</span>
+                  <span>Maturity</span>
+                </div>
+                <div className="relative h-[10px]">
+                  <span
+                    className="absolute left-0 right-0 top-1/2 h-[2px] -translate-y-1/2 rounded-full"
+                    style={{
+                      background:
+                        "linear-gradient(90deg,#334155 0%,#7dd3fc 50%,#334155 100%)",
+                      opacity: 0.55,
+                    }}
+                  />
+                  <span className="absolute left-0 top-1/2 h-[8px] w-[8px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-800 ring-2 ring-white/70" />
+                  <span className="absolute right-0 top-1/2 h-[8px] w-[8px] translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-800 ring-2 ring-white/70" />
+                  <motion.span
+                    className="absolute top-1/2 h-[10px] w-[10px] -translate-y-1/2 rounded-full"
+                    style={{
+                      left: "45%",
+                      background: "#0ea5e9",
+                      boxShadow:
+                        "0 0 0 3px rgba(14,165,233,0.25), 0 0 8px rgba(14,165,233,0.6)",
+                    }}
+                    animate={{ opacity: [0.7, 1, 0.7], scale: [0.9, 1.1, 0.9] }}
+                    transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                </div>
+                <div className="mt-1 flex items-center justify-between text-[10px] font-medium text-slate-900">
+                  <span>{DUMMY.back.startDate}</span>
+                  <span>{DUMMY.back.maturityDate}</span>
+                </div>
               </div>
+
+              {/* Expected return highlight */}
+              <div className="flex items-end justify-between">
+                <div>
+                  <div className="text-[9px] uppercase tracking-[0.24em] text-slate-500">
+                    Issued
+                  </div>
+                  <div className="text-[10px] text-slate-700">
+                    {DUMMY.back.startDate} · Non-transferable
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[9px] uppercase tracking-[0.2em] text-slate-500">
+                    Expected Return
+                  </div>
+                  <div className="flex items-center justify-end gap-1">
+                    <span className="text-[11px] text-emerald-600">▲</span>
+                    <span
+                      className="text-[18px] font-semibold leading-none"
+                      style={{
+                        background:
+                          "linear-gradient(180deg,#334155 0%,#0f172a 100%)",
+                        WebkitBackgroundClip: "text",
+                        backgroundClip: "text",
+                        color: "transparent",
+                      }}
+                    >
+                      {DUMMY.back.expectedReturn}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer: signature + seal */}
+              <div className="flex items-end justify-between border-t border-slate-900/10 pt-2">
+                <div>
+                  <div
+                    className="border-b border-slate-900/25 pb-0.5 font-serif text-[17px] italic leading-none text-slate-800/85"
+                    style={{ letterSpacing: "0.02em" }}
+                  >
+                    John Carter
+                  </div>
+                  <div className="mt-1 text-[8px] uppercase tracking-[0.24em] text-slate-500">
+                    Authorized Signature
+                  </div>
+                </div>
+                <div className="relative h-[36px] w-[36px]">
+                  <motion.div
+                    aria-hidden
+                    className="absolute inset-0 rounded-full"
+                    style={{
+                      backgroundImage:
+                        "conic-gradient(from 0deg,#ffffff,#dfeaf7,#e6dff7,#f7dfe9,#fef2dc,#e6f7ef,#dff0fa,#ffffff)",
+                      padding: 1,
+                      WebkitMask:
+                        "radial-gradient(circle, transparent 55%, black 56%)",
+                      mask: "radial-gradient(circle, transparent 55%, black 56%)",
+                    }}
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                  />
+                  <div
+                    className="absolute inset-[3px] grid place-items-center rounded-full text-[12px] text-slate-800"
+                    style={{
+                      background:
+                        "radial-gradient(circle at 35% 30%, #ffffff 0%, #dbe6f3 70%, #b8c7dc 100%)",
+                      boxShadow:
+                        "inset 0 0 0 1px rgba(255,255,255,0.7), inset 0 -2px 4px rgba(90,120,160,0.35)",
+                    }}
+                  >
+                    ◆
+                  </div>
+                </div>
+              </div>
+
+              {/* Shine sweep (back — slower) */}
+              <motion.div
+                aria-hidden
+                className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/2"
+                style={{
+                  background:
+                    "linear-gradient(115deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.22) 45%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 100%)",
+                  filter: "blur(2px)",
+                  mixBlendMode: "screen",
+                }}
+                animate={{ x: ["-40%", "260%"] }}
+                transition={{
+                  duration: 5,
+                  repeat: Infinity,
+                  repeatDelay: 4,
+                  ease: "easeInOut",
+                }}
+              />
             </div>
           </CardFace>
+
 
           {/* Dynamic lighting overlay (front-facing highlight) */}
           <DynamicHighlight rx={springX} ry={springY} />
