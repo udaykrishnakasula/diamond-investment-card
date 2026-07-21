@@ -316,10 +316,10 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
           className="pointer-events-none absolute -inset-6 rounded-[36px]"
           style={{
             background:
-              "radial-gradient(60% 55% at 50% 55%, rgba(200,215,235,0.75) 0%, rgba(200,215,235,0) 70%)",
-            filter: "blur(24px)",
+              "radial-gradient(60% 55% at 50% 55%, rgba(170,220,255,0.75) 0%, rgba(210,180,255,0.35) 45%, rgba(200,215,235,0) 75%)",
+            filter: "blur(28px)",
           }}
-          animate={{ opacity: [0.45, 0.75, 0.45] }}
+          animate={{ opacity: [0.45, 0.85, 0.45] }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         />
 
