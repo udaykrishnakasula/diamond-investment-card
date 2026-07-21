@@ -1,52 +1,63 @@
+
 ## Goal
 
-Make `DiamondInvestmentCard` actually look like a **diamond/crystal** — not a flat silver/white slab. The current finish is a smooth platinum gradient, which reads as "metal card." A real diamond feel needs faceted geometry, prismatic light dispersion, and glassy translucency.
+Elevate the **back side** of `DiamondInvestmentCard` from a plain data list into a proper "certificate" face that matches the diamond-fire luxury of the front, and add a couple of small front add-ons for cohesion. UI-only. No new files, no data changes, no route changes.
 
-Scope: visual/CSS-only changes inside `src/components/DiamondInvestmentCard.tsx`. No new files, no route changes, no logic changes. Keep dummy data, drag-to-hold behavior, and text color contrast.
+## Back side — redesign
 
-## What changes
+Right now the back is: header row, five plain `Row`s, tiny footer. It reads like a receipt, not a diamond certificate. New layout, top → bottom:
 
-### 1. Crystalline faceted base (replace the smooth platinum body)
-Replace the single soft platinum gradient with a **faceted diamond surface** built from stacked `conic-gradient` + `linear-gradient` layers that simulate cut facets:
-- A `conic-gradient` from 8–12 pale color stops (icy white, pale cyan, pale violet, pale rose, pale mint, pale gold) rotated around ~50% 50% — creates the classic diamond "pinwheel of facets."
-- A second offset `conic-gradient` at lower opacity for secondary facet edges.
-- Two crossing `linear-gradient` stripes at ~30° and ~150° for cut-line highlights.
-- Base tint stays cool white so text remains legible, but with much more color variation than today.
+1. **Certificate header band**
+   - Left: monogram `◆ DIAMOND RESERVE` in the same gradient text style used on the front title.
+   - Right: existing `StatusPill` (Active).
+   - Thin hairline divider with a diamond-shaped centered notch (`◆`) instead of a plain border.
 
-### 2. Prismatic rainbow dispersion (fire)
-Add a dedicated overlay layer with a soft rainbow `linear-gradient` (red→orange→yellow→green→cyan→blue→violet) at low opacity (~15–20%) with `mix-blend-mode: color-dodge` or `screen`. This produces the "fire" that diamonds throw. Animate a slow horizontal drift (very slow, ~14s loop) so the rainbow shimmer moves as if catching light.
+2. **Investor block (hero of the back)**
+   - Small uppercase label: `Certificate Holder`.
+   - Large gradient name: `John Carter` (same gradient recipe as the `$5,000` on front, one size down ~22px).
+   - Under it, the Investment ID rendered as a **monospace serial** (`INV-2026-0001`) with letter-spacing, in a subtle framed pill (`border border-slate-900/15 bg-white/30 backdrop-blur-[2px]`), to feel like an engraved serial number.
 
-### 3. Sparkle points
-Add 4–6 tiny absolutely-positioned white dots (2–3px, `box-shadow` glow, `mix-blend-mode: screen`) at fixed facet intersections, each with a staggered `opacity` + `scale` twinkle animation (Framer Motion, 2–4s loop, different delays). Subtle, not glittery/tacky.
+3. **Timeline strip (replaces Start/Maturity rows)**
+   - Horizontal 3-node timeline: `Start · 20 Jul 2026` ── active dot ── `Maturity · 18 Sep 2026`.
+   - Connecting line is a subtle gradient (slate → icy blue → slate). A small pulsing dot sits ~45% along the line to mirror the front progress ring value visually.
+   - Tiny labels above nodes (`START`, `MATURITY`) in the same uppercase tracking as front labels.
 
-### 4. Glassy edge & bevel
-- Strengthen the inner ring: brighter top-left highlight, darker bottom-right shadow inside the card, to sell the beveled crystal edge.
-- Slight increase in outer drop shadow saturation toward cool blue for a "resting on glass" look.
+4. **Expected return highlight**
+   - Right-aligned block: label `Expected Return` + gradient value `$8,000` (same gradient family as front).
+   - Small caret-up glyph `▲` in muted emerald next to it (visual only).
 
-### 5. Cooler outer glow
-Shift the breathing glow from neutral silver to a very pale icy-cyan/violet mix, so the halo around the card reads "gem" not "chrome."
+5. **Certificate footer**
+   - Left: faux signature script for `John Carter` (Tailwind `italic font-serif` with a hand-drawn feel; pure CSS, no font import — falls back to the system serif).
+   - Right: seal — a small circular `◆` badge with a rotating conic-gradient ring (very slow, ~20s) to sell "authenticated." Reuse existing conic/prismatic layers scaled down; no new libs.
+   - Under the signature: micro-text `Issued 20 Jul 2026 · Non-transferable` at ~9px slate-500.
 
-### 6. Keep readability
-Text stays dark slate (`#0f172a` / `#334155`). Add a very subtle white translucent plate (`bg-white/25 backdrop-blur-[2px]`) only behind the large `$5,000` number and the certificate rows if contrast drops after adding the prismatic layer — decided visually during implementation.
+6. **Back-side shine sweep**
+   - Add the same shine sweep motion component the front has, but slower (5s / repeatDelay 4s) and lower opacity so it doesn't compete with the front.
+
+## Front side — small add-ons (cohesion only)
+
+- **Chip glyph** in the top-right of the header row (before the `StatusPill`): a tiny 24×18 rounded "chip" using the same conic-gradient recipe as the card body, with a 1px inner ring. Sells the "physical card" read.
+- **Micro-serial** in the front footer's bottom-left corner (below Lock Period), 9px slate-500 mono: last 4 of the investment ID `··· 0001`. Visually ties front and back.
+- Nothing else on the front changes.
 
 ## What stays the same
 
-- Component API, props, file location, exports.
-- Framer Motion interactions: drag, hold-in-place (no snap-back), idle float, hover lift, shine sweep, breathing glow.
-- Dummy data, both faces, progress ring, status pill.
-- Overall size, aspect ratio, radius.
+- Component API, props, exports, file location.
+- Dummy data values, both faces present, drag-to-hold behavior, idle float, breathing glow, sparkles, prismatic fire, dynamic highlight.
+- Overall size, aspect ratio, 24px radius, resting tilt.
 
 ## Out of scope
 
-- No images, no external assets.
-- No new dependencies.
-- No changes to routes, pages, theme tokens, or `styles.css`.
-- No behavior/logic changes.
+- No new dependencies, no fonts, no images/assets.
+- No route/page changes, no theme token changes.
+- No logic, no backend, no state beyond what's already there.
 
 ## Technical notes
 
-- All new layers are CSS `background-image` stacks + a couple of extra `motion.div` overlays inside `CardFace` / the card body. No new components.
-- Prismatic + facet layers sit **below** the noise grain and **below** the dynamic highlight, so lighting still shifts correctly during rotation.
-- All animations use existing Framer Motion — no new libs.
-- Sparkles are `motion.span` with `animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1.2, 0.8] }}` on staggered delays.
-- TypeScript strict-safe, no `any`, no console errors expected.
+- All new elements live inside the existing `<CardFace back>` block plus small additions in `<CardFace>` (front).
+- Timeline: pure flex + 2 absolutely-positioned dots and a `linear-gradient` line; the moving progress dot uses `motion.span` with `animate={{ left: ['5%', '45%'] }}` on mount, then a subtle `opacity` pulse.
+- Signature: `<span className="font-serif italic text-[18px] text-slate-800/80">John Carter</span>` with a thin underline `border-b border-slate-900/20`.
+- Seal ring: `motion.div` with `backgroundImage: conic-gradient(...)` and `animate={{ rotate: 360 }}` at `duration: 20`, `repeat: Infinity`, `ease: "linear"`.
+- Chip glyph: same conic-gradient stack shrunk to 24×18, `rounded-[4px]`, `boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.6)"`.
+- Every new text color stays in the dark-slate family already used, so contrast is preserved on the diamond finish.
+- TypeScript strict-safe, no `any`, no new hooks patterns.
