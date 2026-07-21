@@ -59,26 +59,72 @@ function CardFace({ children, back = false }: FaceProps) {
         transform: back ? "rotateY(180deg)" : undefined,
         backfaceVisibility: "hidden",
         WebkitBackfaceVisibility: "hidden",
-        // Layered diamond/platinum finish — clear, icy, prismatic.
+        // Faceted diamond finish: conic facets + prismatic tints + icy base.
         backgroundImage: [
-          // Top gloss
           "linear-gradient(135deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 45%)",
-          // Prismatic hint (very subtle rainbow refraction)
-          "linear-gradient(115deg, rgba(255,210,230,0.18) 0%, rgba(210,230,255,0.18) 35%, rgba(220,255,235,0.18) 65%, rgba(255,240,210,0.18) 100%)",
-          // Platinum body
-          "linear-gradient(160deg, #e9eef5 0%, #f6f8fb 25%, #c8d1dc 55%, #eef2f7 100%)",
-          // Icy sheen
-          "radial-gradient(120% 80% at 20% 10%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 55%)",
-          "radial-gradient(80% 60% at 90% 90%, rgba(180,200,220,0.55) 0%, rgba(180,200,220,0) 60%)",
+          "linear-gradient(30deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 12%, rgba(255,255,255,0) 45%, rgba(255,255,255,0.14) 55%, rgba(255,255,255,0) 88%)",
+          "linear-gradient(150deg, rgba(180,210,240,0.22) 0%, rgba(180,210,240,0) 20%, rgba(255,255,255,0) 55%, rgba(200,220,255,0.18) 80%)",
+          "conic-gradient(from 200deg at 65% 40%, rgba(255,255,255,0.18), rgba(200,230,255,0) 25%, rgba(230,210,255,0.14) 50%, rgba(255,255,255,0) 75%, rgba(255,255,255,0.16) 100%)",
+          "conic-gradient(from 20deg at 50% 50%, #ffffff 0deg, #dfeaf7 30deg, #e6dff7 60deg, #f7dfe9 95deg, #fef2dc 130deg, #e6f7ef 165deg, #dff0fa 200deg, #e9e0f7 235deg, #ffffff 270deg, #d8e6f4 305deg, #ffffff 360deg)",
+          "linear-gradient(160deg, #eef4fb 0%, #ffffff 40%, #dbe6f3 100%)",
         ].join(","),
         boxShadow: [
-          "inset 0 0 0 1px rgba(255,255,255,0.6)",
-          "inset 0 1px 0 rgba(255,255,255,0.8)",
-          "inset 0 -1px 0 rgba(120,140,170,0.35)",
+          "inset 0 0 0 1px rgba(255,255,255,0.75)",
+          "inset 0 1px 0 rgba(255,255,255,0.95)",
+          "inset 0 -1px 0 rgba(90,120,160,0.4)",
+          "inset 8px 8px 24px rgba(255,255,255,0.35)",
+          "inset -10px -14px 30px rgba(80,110,150,0.25)",
         ].join(","),
       }}
-
     >
+      {/* Prismatic fire — slow drifting rainbow */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(115deg, rgba(255,90,120,0.18) 0%, rgba(255,180,90,0.16) 15%, rgba(255,240,120,0.16) 30%, rgba(120,230,160,0.16) 45%, rgba(120,200,255,0.18) 60%, rgba(150,140,255,0.18) 78%, rgba(230,130,230,0.16) 100%)",
+          backgroundSize: "220% 100%",
+          mixBlendMode: "screen",
+          filter: "blur(4px)",
+        }}
+        animate={{ backgroundPositionX: ["0%", "100%", "0%"] }}
+        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+      />
+
+      {/* Sparkle points */}
+      {[
+        { top: "14%", left: "22%", d: 0 },
+        { top: "32%", left: "78%", d: 1.1 },
+        { top: "58%", left: "18%", d: 2.2 },
+        { top: "72%", left: "62%", d: 0.6 },
+        { top: "22%", left: "54%", d: 1.7 },
+        { top: "82%", left: "88%", d: 2.8 },
+      ].map((s, i) => (
+        <motion.span
+          key={i}
+          aria-hidden
+          className="pointer-events-none absolute rounded-full"
+          style={{
+            top: s.top,
+            left: s.left,
+            width: 3,
+            height: 3,
+            background: "white",
+            boxShadow:
+              "0 0 6px 1px rgba(255,255,255,0.9), 0 0 12px 2px rgba(200,230,255,0.6)",
+            mixBlendMode: "screen",
+          }}
+          animate={{ opacity: [0.15, 1, 0.15], scale: [0.7, 1.3, 0.7] }}
+          transition={{
+            duration: 2.6 + (i % 3) * 0.6,
+            repeat: Infinity,
+            delay: s.d,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+
       {/* Noise grain */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.08] mix-blend-overlay"
