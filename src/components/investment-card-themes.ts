@@ -325,12 +325,12 @@ const PLATINUM: CardTheme = {
   ].join(","),
   prismatic:
     "linear-gradient(115deg, rgba(255,255,255,0.10) 0%, rgba(170,196,222,0.08) 24%, rgba(255,255,255,0.12) 46%, rgba(150,178,206,0.08) 68%, rgba(255,255,255,0.10) 90%, rgba(180,200,222,0.07) 100%)",
-  prismaticOpacity: 0.8,
+  prismaticOpacity: 0.45,
   prismaticBlend: "screen",
   sparkleBackground: "#f2f7fc",
   sparkleShadow:
     "0 0 6px 1px rgba(235,244,252,0.85), 0 0 12px 2px rgba(170,200,230,0.5)",
-  glow: "radial-gradient(60% 55% at 50% 55%, rgba(150,178,206,0.45) 0%, rgba(90,110,132,0.28) 45%, rgba(60,70,84,0) 75%)",
+  glow: "radial-gradient(60% 55% at 50% 55%, rgba(150,178,206,0.32) 0%, rgba(90,110,132,0.20) 45%, rgba(60,70,84,0) 75%)",
   highlightStops:
     "rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.05) 40%, rgba(255,255,255,0) 70%",
   chipBackground:
