@@ -1,63 +1,60 @@
-
 ## Goal
 
-Elevate the **back side** of `DiamondInvestmentCard` from a plain data list into a proper "certificate" face that matches the diamond-fire luxury of the front, and add a couple of small front add-ons for cohesion. UI-only. No new files, no data changes, no route changes.
+Turn the approved Diamond card into a typed, four-variant card system — Silver, Gold, Diamond, Platinum — rendered as four cards on the home page. Same physical card model, same 3D system, same animations, same layout. Only material, branding and plan data differ.
 
-## Back side — redesign
+The Diamond card's appearance and behaviour stay byte-for-byte equivalent: its current gradients, shadows, glow, text colors, sparkles, prismatic layers, timings and easings become the `diamond` entry of the theme config, so it renders exactly as it does today.
 
-Right now the back is: header row, five plain `Row`s, tiny footer. It reads like a receipt, not a diamond certificate. New layout, top → bottom:
+## Refactor (minimal)
 
-1. **Certificate header band**
-   - Left: monogram `◆ DIAMOND RESERVE` in the same gradient text style used on the front title.
-   - Right: existing `StatusPill` (Active).
-   - Thin hairline divider with a diamond-shaped centered notch (`◆`) instead of a plain border.
+Rename the component to `InvestmentCard` in the same file, with a backwards-compatible `DiamondInvestmentCard` export that renders `variant="diamond"`.
 
-2. **Investor block (hero of the back)**
-   - Small uppercase label: `Certificate Holder`.
-   - Large gradient name: `John Carter` (same gradient recipe as the `$5,000` on front, one size down ~22px).
-   - Under it, the Investment ID rendered as a **monospace serial** (`INV-2026-0001`) with letter-spacing, in a subtle framed pill (`border border-slate-900/15 bg-white/30 backdrop-blur-[2px]`), to feel like an engraved serial number.
+```ts
+type CardVariant = "silver" | "gold" | "diamond" | "platinum";
+<InvestmentCard variant="gold" />
+```
 
-3. **Timeline strip (replaces Start/Maturity rows)**
-   - Horizontal 3-node timeline: `Start · 20 Jul 2026` ── active dot ── `Maturity · 18 Sep 2026`.
-   - Connecting line is a subtle gradient (slate → icy blue → slate). A small pulsing dot sits ~45% along the line to mirror the front progress ring value visually.
-   - Tiny labels above nodes (`START`, `MATURITY`) in the same uppercase tracking as front labels.
+Everything currently hardcoded as a color/gradient string moves into a `CARD_THEMES: Record<CardVariant, CardTheme>` object. The theme covers: face background layers, inset bevel shadows, chip gradient, prismatic overlay, sparkle color, outer breathing glow, dynamic highlight tint, progress-ring gradient stops, title/amount/return gradient text, and the text-color family (ink vs. platinum-on-black). Structure, spacing, sizes, motion props and JSX stay identical for all four.
 
-4. **Expected return highlight**
-   - Right-aligned block: label `Expected Return` + gradient value `$8,000` (same gradient family as front).
-   - Small caret-up glyph `▲` in muted emerald next to it (visual only).
+## Materials
 
-5. **Certificate footer**
-   - Left: faux signature script for `John Carter` (Tailwind `italic font-serif` with a hand-drawn feel; pure CSS, no font import — falls back to the system serif).
-   - Right: seal — a small circular `◆` badge with a rotating conic-gradient ring (very slow, ~20s) to sell "authenticated." Reuse existing conic/prismatic layers scaled down; no new libs.
-   - Under the signature: micro-text `Issued 20 Jul 2026 · Non-transferable` at ~9px slate-500.
+- **Silver** — bright polished silver: icy white highlights, cool metallic grey mid-tones, blue-silver reflections, restrained prismatic fire. Dark-slate typography, as on Diamond.
+- **Gold** — champagne/warm metallic gold with amber and soft bronze depth, bright gold specular highlights. Deep brown-bronze typography for contrast. No neon yellow.
+- **Diamond** — unchanged.
+- **Platinum** — deep black/graphite metal base with charcoal facets, restrained platinum-silver and icy-white highlights, cool platinum sheen. Typography inverts to silver/platinum tones (light text, subtle white borders, light-on-dark pills and rings) so the existing layout stays readable.
 
-6. **Back-side shine sweep**
-   - Add the same shine sweep motion component the front has, but slower (5s / repeatDelay 4s) and lower opacity so it doesn't compete with the front.
+## Branding
 
-## Front side — small add-ons (cohesion only)
+| Variant | Front | Back certificate |
+| --- | --- | --- |
+| Silver | ◆ SILVER | ◆ SILVER RESERVE |
+| Gold | ◆ GOLD | ◆ GOLD RESERVE |
+| Diamond | ◆ DIAMOND | ◆ DIAMOND RESERVE |
+| Platinum | ◆ PLATINUM | ◆ PLATINUM RESERVE |
 
-- **Chip glyph** in the top-right of the header row (before the `StatusPill`): a tiny 24×18 rounded "chip" using the same conic-gradient recipe as the card body, with a 1px inner ring. Sells the "physical card" read.
-- **Micro-serial** in the front footer's bottom-left corner (below Lock Period), 9px slate-500 mono: last 4 of the investment ID `··· 0001`. Visually ties front and back.
-- Nothing else on the front changes.
+## Data
 
-## What stays the same
+Per-variant dummy data object, same fields as today.
 
-- Component API, props, exports, file location.
-- Dummy data values, both faces present, drag-to-hold behavior, idle float, breathing glow, sparkles, prismatic fire, dynamic highlight.
-- Overall size, aspect ratio, 24px radius, resting tilt.
+| | Silver | Gold | Diamond | Platinum |
+| --- | --- | --- | --- | --- |
+| Investment | $300 | $1,000 | $5,000 (unchanged) | $5,000 |
+| Return | 200% | 200% | 160% (unchanged) | 200% |
+| Lock period | 60 Days | 60 Days | 60 Days | 60 Days |
+| Investment ID | INV-2026-0002 | INV-2026-0003 | INV-2026-0001 | INV-2026-0004 |
+
+Investor name, status, progress (45%), start 20 Jul 2026 / maturity 18 Sep 2026 carry over from the existing card; expected return is stated as the amount plus the return percentage. Micro-serial on each front shows the last 4 of that card's ID. Tell me if Silver/Gold should differ on return or lock period and I'll adjust — nothing is computed, all values are static display strings.
+
+## Page layout
+
+`src/routes/index.tsx` renders all four in order Silver → Gold → Diamond → Platinum on the existing dark radial background: a single column on mobile, two columns on tablet, and a four-across / two-by-two responsive grid on desktop. Each card keeps `max-w-[420px]` and its `42/26` aspect ratio, its own `perspective` wrapper and independent drag state, with enough gap for the glow and 3D tilt. No horizontal scroll, no stretching.
 
 ## Out of scope
 
-- No new dependencies, no fonts, no images/assets.
-- No route/page changes, no theme token changes.
-- No logic, no backend, no state beyond what's already there.
+No new dependencies, no carousel, no backend, no routing changes, no changes to the Diamond visual or interaction behaviour.
 
 ## Technical notes
 
-- All new elements live inside the existing `<CardFace back>` block plus small additions in `<CardFace>` (front).
-- Timeline: pure flex + 2 absolutely-positioned dots and a `linear-gradient` line; the moving progress dot uses `motion.span` with `animate={{ left: ['5%', '45%'] }}` on mount, then a subtle `opacity` pulse.
-- Signature: `<span className="font-serif italic text-[18px] text-slate-800/80">John Carter</span>` with a thin underline `border-b border-slate-900/20`.
-- Seal ring: `motion.div` with `backgroundImage: conic-gradient(...)` and `animate={{ rotate: 360 }}` at `duration: 20`, `repeat: Infinity`, `ease: "linear"`.
-- Chip glyph: same conic-gradient stack shrunk to 24×18, `rounded-[4px]`, `boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.6)"`.
-- Every new text color stays in the dark-slate family already used, so contrast is preserved on the diamond finish.
-- TypeScript strict-safe, no `any`, no new hooks patterns.
+- One file: `src/components/DiamondInvestmentCard.tsx` grows the theme map and variant prop; `src/routes/index.tsx` renders the grid and gets an updated head title/description.
+- `CardFace`, `ProgressRing`, `StatusPill`, `DynamicHighlight` take the theme (or the colors they need) as props instead of hardcoded strings.
+- The `ProgressRing` SVG gradient id is namespaced per variant so four rings on one page don't collide.
+- Strict TypeScript, no `any`; theme objects typed against a `CardTheme` interface.
