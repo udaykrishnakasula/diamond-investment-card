@@ -5,32 +5,29 @@ import {
   useTransform,
   type MotionValue,
 } from "framer-motion";
-import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type PointerEvent,
+  type ReactNode,
+} from "react";
+import {
+  CARD_DATA,
+  CARD_THEMES,
+  type CardTheme,
+  type CardVariant,
+} from "./investment-card-themes";
 
 // -----------------------------------------------------------------------------
-// DiamondInvestmentCard
-// A single reusable, self-contained 3D luxury investment card.
-// UI-only — all data below is dummy data.
+// InvestmentCard
+// One physical 3D luxury card model, four materials: silver, gold, diamond,
+// platinum. UI-only — all data is dummy data.
 // -----------------------------------------------------------------------------
 
-const DUMMY = {
-  front: {
-    plan: "Diamond",
-    investment: "$5,000",
-    lockPeriod: "60 Days",
-    returnPct: "160%",
-    status: "Active",
-    progress: 45,
-  },
-  back: {
-    investorName: "John Carter",
-    investmentId: "INV-2026-0001",
-    startDate: "20 Jul 2026",
-    maturityDate: "18 Sep 2026",
-    expectedReturn: "$8,000",
-    status: "Active",
-  },
-} as const;
+export type { CardVariant };
 
 // Resting tilt — a premium, off-axis viewing angle.
 const REST_X = -8;
@@ -49,9 +46,9 @@ const NOISE_SVG =
     </svg>`,
   );
 
-type FaceProps = { children: React.ReactNode; back?: boolean };
+type FaceProps = { children: ReactNode; back?: boolean; theme: CardTheme };
 
-function CardFace({ children, back = false }: FaceProps) {
+function CardFace({ children, back = false, theme }: FaceProps) {
   return (
     <div
       className="absolute inset-0 overflow-hidden rounded-[24px]"
@@ -59,33 +56,20 @@ function CardFace({ children, back = false }: FaceProps) {
         transform: back ? "rotateY(180deg)" : undefined,
         backfaceVisibility: "hidden",
         WebkitBackfaceVisibility: "hidden",
-        // Faceted diamond finish: conic facets + prismatic tints + icy base.
-        backgroundImage: [
-          "linear-gradient(135deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 45%)",
-          "linear-gradient(30deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 12%, rgba(255,255,255,0) 45%, rgba(255,255,255,0.14) 55%, rgba(255,255,255,0) 88%)",
-          "linear-gradient(150deg, rgba(180,210,240,0.22) 0%, rgba(180,210,240,0) 20%, rgba(255,255,255,0) 55%, rgba(200,220,255,0.18) 80%)",
-          "conic-gradient(from 200deg at 65% 40%, rgba(255,255,255,0.18), rgba(200,230,255,0) 25%, rgba(230,210,255,0.14) 50%, rgba(255,255,255,0) 75%, rgba(255,255,255,0.16) 100%)",
-          "conic-gradient(from 20deg at 50% 50%, #ffffff 0deg, #dfeaf7 30deg, #e6dff7 60deg, #f7dfe9 95deg, #fef2dc 130deg, #e6f7ef 165deg, #dff0fa 200deg, #e9e0f7 235deg, #ffffff 270deg, #d8e6f4 305deg, #ffffff 360deg)",
-          "linear-gradient(160deg, #eef4fb 0%, #ffffff 40%, #dbe6f3 100%)",
-        ].join(","),
-        boxShadow: [
-          "inset 0 0 0 1px rgba(255,255,255,0.75)",
-          "inset 0 1px 0 rgba(255,255,255,0.95)",
-          "inset 0 -1px 0 rgba(90,120,160,0.4)",
-          "inset 8px 8px 24px rgba(255,255,255,0.35)",
-          "inset -10px -14px 30px rgba(80,110,150,0.25)",
-        ].join(","),
+        // Faceted material finish: conic facets + tints + base.
+        backgroundImage: theme.faceBackground,
+        boxShadow: theme.faceShadow,
       }}
     >
-      {/* Prismatic fire — slow drifting rainbow */}
+      {/* Prismatic fire — slow drifting reflections */}
       <motion.div
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
-          backgroundImage:
-            "linear-gradient(115deg, rgba(255,90,120,0.18) 0%, rgba(255,180,90,0.16) 15%, rgba(255,240,120,0.16) 30%, rgba(120,230,160,0.16) 45%, rgba(120,200,255,0.18) 60%, rgba(150,140,255,0.18) 78%, rgba(230,130,230,0.16) 100%)",
+          backgroundImage: theme.prismatic,
           backgroundSize: "220% 100%",
-          mixBlendMode: "screen",
+          mixBlendMode: theme.prismaticBlend,
+          opacity: theme.prismaticOpacity,
           filter: "blur(4px)",
         }}
         animate={{ backgroundPositionX: ["0%", "100%", "0%"] }}
@@ -110,9 +94,8 @@ function CardFace({ children, back = false }: FaceProps) {
             left: s.left,
             width: 3,
             height: 3,
-            background: "white",
-            boxShadow:
-              "0 0 6px 1px rgba(255,255,255,0.9), 0 0 12px 2px rgba(200,230,255,0.6)",
+            background: theme.sparkleBackground,
+            boxShadow: theme.sparkleShadow,
             mixBlendMode: "screen",
           }}
           animate={{ opacity: [0.15, 1, 0.15], scale: [0.7, 1.3, 0.7] }}
@@ -135,11 +118,12 @@ function CardFace({ children, back = false }: FaceProps) {
   );
 }
 
-function ProgressRing({ value }: { value: number }) {
+function ProgressRing({ value, theme }: { value: number; theme: CardTheme }) {
   const size = 56;
   const stroke = 5;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
+  const gradientId = `ring-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const [offset, setOffset] = useState(c);
   useEffect(() => {
     const t = requestAnimationFrame(() => setOffset(c - (value / 100) * c));
@@ -152,7 +136,7 @@ function ProgressRing({ value }: { value: number }) {
           cx={size / 2}
           cy={size / 2}
           r={r}
-          stroke="rgba(255,255,255,0.15)"
+          stroke={theme.ringTrack}
           strokeWidth={stroke}
           fill="none"
         />
@@ -160,7 +144,7 @@ function ProgressRing({ value }: { value: number }) {
           cx={size / 2}
           cy={size / 2}
           r={r}
-          stroke="url(#diamondRing)"
+          stroke={`url(#${gradientId})`}
           strokeWidth={stroke}
           strokeLinecap="round"
           fill="none"
@@ -169,31 +153,32 @@ function ProgressRing({ value }: { value: number }) {
           style={{ transition: "stroke-dashoffset 1.4s cubic-bezier(.22,.61,.36,1)" }}
         />
         <defs>
-          <linearGradient id="diamondRing" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#8fa3bd" />
-            <stop offset="100%" stopColor="#334155" />
+          <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor={theme.ringFrom} />
+            <stop offset="100%" stopColor={theme.ringTo} />
           </linearGradient>
         </defs>
       </svg>
-      <div className="absolute inset-0 grid place-items-center text-[11px] font-semibold tracking-wide text-slate-900">
+      <div
+        className="absolute inset-0 grid place-items-center text-[11px] font-semibold tracking-wide"
+        style={{ color: theme.value }}
+      >
         {value}%
       </div>
     </div>
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function StatusPill({ label, theme }: { label: string; theme: CardTheme }) {
   return (
-    <div className="flex items-center justify-between text-[12px]">
-      <span className="uppercase tracking-[0.14em] text-slate-600">{label}</span>
-      <span className="font-medium text-slate-900">{value}</span>
-    </div>
-  );
-}
-
-function StatusPill({ label }: { label: string }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-900/20 bg-white/40 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-900 backdrop-blur-md">
+    <span
+      className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] backdrop-blur-md"
+      style={{
+        borderColor: theme.pillBorder,
+        background: theme.pillBg,
+        color: theme.pillInk,
+      }}
+    >
       <span className="relative flex h-1.5 w-1.5">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-70" />
         <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
@@ -207,9 +192,11 @@ function StatusPill({ label }: { label: string }) {
 function DynamicHighlight({
   rx,
   ry,
+  theme,
 }: {
   rx: MotionValue<number>;
   ry: MotionValue<number>;
+  theme: CardTheme;
 }) {
   const bgX = useTransform(ry, [-180, 180], ["100%", "0%"]);
   const bgY = useTransform(rx, [-180, 180], ["0%", "100%"]);
@@ -217,7 +204,7 @@ function DynamicHighlight({
     [bgX, bgY] as unknown as MotionValue<string>[],
     (latest) => {
       const [x, y] = latest as unknown as [string, string];
-      return `radial-gradient(60% 45% at ${x} ${y}, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.08) 40%, rgba(255,255,255,0) 70%)`;
+      return `radial-gradient(60% 45% at ${x} ${y}, ${theme.highlightStops})`;
     },
   );
   return (
@@ -228,11 +215,27 @@ function DynamicHighlight({
   );
 }
 
-export interface DiamondInvestmentCardProps {
+function gradientText(image: string) {
+  return {
+    background: image,
+    WebkitBackgroundClip: "text" as const,
+    backgroundClip: "text" as const,
+    color: "transparent",
+  };
+}
+
+export interface InvestmentCardProps {
+  variant?: CardVariant;
   className?: string;
 }
 
-export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps) {
+export function InvestmentCard({
+  variant = "diamond",
+  className,
+}: InvestmentCardProps) {
+  const theme = CARD_THEMES[variant];
+  const data = CARD_DATA[variant];
+
   const rotX = useMotionValue(REST_X);
   const rotY = useMotionValue(REST_Y);
   const springX = useSpring(rotX, { stiffness: 120, damping: 18, mass: 0.6 });
@@ -242,15 +245,12 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
   const lastRef = useRef({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
 
-  const onPointerDown = useCallback(
-    (e: PointerEvent<HTMLDivElement>) => {
-      draggingRef.current = true;
-      setDragging(true);
-      lastRef.current = { x: e.clientX, y: e.clientY };
-      (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
-    },
-    [],
-  );
+  const onPointerDown = useCallback((e: PointerEvent<HTMLDivElement>) => {
+    draggingRef.current = true;
+    setDragging(true);
+    lastRef.current = { x: e.clientX, y: e.clientY };
+    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+  }, []);
 
   const onPointerMove = useCallback(
     (e: PointerEvent<HTMLDivElement>) => {
@@ -265,37 +265,27 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
     [rotX, rotY],
   );
 
+  const endDrag = useCallback((e: PointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    setDragging(false);
+    try {
+      (e.currentTarget as HTMLDivElement).releasePointerCapture(e.pointerId);
+    } catch {
+      // ignore
+    }
+    // Hold position — do NOT snap back. Card stays wherever the user left it.
+  }, []);
 
-  const endDrag = useCallback(
-    (e: PointerEvent<HTMLDivElement>) => {
-      if (!draggingRef.current) return;
-      draggingRef.current = false;
-      setDragging(false);
-      try {
-        (e.currentTarget as HTMLDivElement).releasePointerCapture(e.pointerId);
-      } catch {
-        // ignore
-      }
-      // Hold position — do NOT snap back. Card stays wherever the user left it.
-    },
-    [],
-  );
+  const onPointerLeave = useCallback((_e: PointerEvent<HTMLDivElement>) => {
+    // Do not reset when the pointer leaves — keep current rotation.
+  }, []);
 
-  const onPointerLeave = useCallback(
-    (_e: PointerEvent<HTMLDivElement>) => {
-      // Do not reset when the pointer leaves — keep current rotation.
-    },
-    [],
-  );
-
+  const microSerial = `··· ${data.back.investmentId.slice(-4)}`;
 
   return (
     <div
-      className={
-        "relative select-none " +
-        "w-full max-w-[420px] " +
-        (className ?? "")
-      }
+      className={"relative select-none " + "w-full max-w-[420px] " + (className ?? "")}
       style={{ perspective: 1200 }}
     >
       {/* Floating wrapper: idle float + hover lift. */}
@@ -314,11 +304,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
         <motion.div
           aria-hidden
           className="pointer-events-none absolute -inset-6 rounded-[36px]"
-          style={{
-            background:
-              "radial-gradient(60% 55% at 50% 55%, rgba(170,220,255,0.75) 0%, rgba(210,180,255,0.35) 45%, rgba(200,215,235,0) 75%)",
-            filter: "blur(28px)",
-          }}
+          style={{ background: theme.glow, filter: "blur(28px)" }}
           animate={{ opacity: [0.45, 0.85, 0.45] }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -336,30 +322,26 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
             rotateX: springX,
             rotateY: springY,
             willChange: "transform",
-            boxShadow:
-              "0 30px 60px -20px rgba(6,20,40,0.7), 0 10px 25px -10px rgba(6,20,40,0.5)",
+            boxShadow: theme.bodyShadow,
           }}
         >
           {/* FRONT */}
-          <CardFace>
+          <CardFace theme={theme}>
             <div className="relative flex h-full w-full flex-col justify-between p-5">
               {/* Header */}
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2">
                   <span
                     className="text-[15px] leading-none"
-                    style={{
-                      background:
-                        "linear-gradient(180deg,#64748b 0%,#0f172a 100%)",
-                      WebkitBackgroundClip: "text",
-                      backgroundClip: "text",
-                      color: "transparent",
-                    }}
+                    style={gradientText(theme.gradGlyph)}
                   >
                     ◆
                   </span>
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-800">
-                    Diamond
+                  <span
+                    className="text-[11px] font-semibold uppercase tracking-[0.32em]"
+                    style={{ color: theme.brandInk }}
+                  >
+                    {data.brand}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -368,69 +350,76 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
                     aria-hidden
                     className="h-[18px] w-[24px] rounded-[4px]"
                     style={{
-                      backgroundImage:
-                        "conic-gradient(from 20deg at 50% 50%, #ffffff 0deg, #dfeaf7 60deg, #e6dff7 120deg, #fef2dc 180deg, #dff0fa 240deg, #e9e0f7 300deg, #ffffff 360deg), linear-gradient(160deg,#eef4fb,#dbe6f3)",
-                      boxShadow:
-                        "inset 0 0 0 1px rgba(255,255,255,0.7), inset 0 0 0 2px rgba(90,120,160,0.25)",
+                      backgroundImage: theme.chipBackground,
+                      boxShadow: theme.chipShadow,
                     }}
                   />
-                  <StatusPill label={DUMMY.front.status} />
+                  <StatusPill label={data.front.status} theme={theme} />
                 </div>
               </div>
 
               {/* Middle */}
               <div className="flex items-end justify-between">
                 <div>
-                  <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500">
+                  <div
+                    className="text-[10px] uppercase tracking-[0.2em]"
+                    style={{ color: theme.label }}
+                  >
                     Investment
                   </div>
                   <div
                     className="mt-1 text-[34px] font-semibold leading-none tracking-tight"
-                    style={{
-                      background:
-                        "linear-gradient(180deg,#1e293b 0%,#64748b 100%)",
-                      WebkitBackgroundClip: "text",
-                      backgroundClip: "text",
-                      color: "transparent",
-                    }}
+                    style={gradientText(theme.gradAmount)}
                   >
-                    {DUMMY.front.investment}
+                    {data.front.investment}
                   </div>
-                  <div className="mt-2 text-[11px] uppercase tracking-[0.18em] text-slate-600">
-                    Plan · {DUMMY.front.plan}
+                  <div
+                    className="mt-2 text-[11px] uppercase tracking-[0.18em]"
+                    style={{ color: theme.sublabel }}
+                  >
+                    Plan · {data.front.plan}
                   </div>
                 </div>
-                <ProgressRing value={DUMMY.front.progress} />
+                <ProgressRing value={data.front.progress} theme={theme} />
               </div>
 
               {/* Footer */}
-              <div className="flex items-end justify-between border-t border-slate-900/10 pt-3">
+              <div
+                className="flex items-end justify-between border-t pt-3"
+                style={{ borderColor: theme.hairlineSoft }}
+              >
                 <div>
-                  <div className="text-[9px] uppercase tracking-[0.2em] text-slate-500">
+                  <div
+                    className="text-[9px] uppercase tracking-[0.2em]"
+                    style={{ color: theme.label }}
+                  >
                     Lock Period
                   </div>
-                  <div className="text-[13px] font-medium text-slate-900">
-                    {DUMMY.front.lockPeriod}
+                  <div
+                    className="text-[13px] font-medium"
+                    style={{ color: theme.value }}
+                  >
+                    {data.front.lockPeriod}
                   </div>
-                  <div className="mt-1 font-mono text-[9px] tracking-[0.2em] text-slate-500">
-                    ··· 0001
+                  <div
+                    className="mt-1 font-mono text-[9px] tracking-[0.2em]"
+                    style={{ color: theme.label }}
+                  >
+                    {microSerial}
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[9px] uppercase tracking-[0.2em] text-slate-500">
+                  <div
+                    className="text-[9px] uppercase tracking-[0.2em]"
+                    style={{ color: theme.label }}
+                  >
                     Return
                   </div>
                   <div
                     className="text-[15px] font-semibold"
-                    style={{
-                      background:
-                        "linear-gradient(180deg,#334155 0%,#0f172a 100%)",
-                      WebkitBackgroundClip: "text",
-                      backgroundClip: "text",
-                      color: "transparent",
-                    }}
+                    style={gradientText(theme.gradReturn)}
                   >
-                    {DUMMY.front.returnPct}
+                    {data.front.returnPct}
                   </div>
                 </div>
               </div>
@@ -440,8 +429,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
                 aria-hidden
                 className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/2"
                 style={{
-                  background:
-                    "linear-gradient(115deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.35) 45%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0.35) 55%, rgba(255,255,255,0) 100%)",
+                  background: theme.shineFront,
                   filter: "blur(2px)",
                   mixBlendMode: "screen",
                 }}
@@ -457,7 +445,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
           </CardFace>
 
           {/* BACK */}
-          <CardFace back>
+          <CardFace back theme={theme}>
             <div className="relative flex h-full w-full flex-col justify-between p-5">
               {/* Header band */}
               <div>
@@ -465,140 +453,170 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
                   <div className="flex items-center gap-2">
                     <span
                       className="text-[13px] leading-none"
-                      style={{
-                        background:
-                          "linear-gradient(180deg,#64748b 0%,#0f172a 100%)",
-                        WebkitBackgroundClip: "text",
-                        backgroundClip: "text",
-                        color: "transparent",
-                      }}
+                      style={gradientText(theme.gradGlyph)}
                     >
                       ◆
                     </span>
                     <span
                       className="text-[10px] font-semibold uppercase tracking-[0.32em]"
-                      style={{
-                        background:
-                          "linear-gradient(180deg,#1e293b 0%,#64748b 100%)",
-                        WebkitBackgroundClip: "text",
-                        backgroundClip: "text",
-                        color: "transparent",
-                      }}
+                      style={gradientText(theme.gradTitle)}
                     >
-                      Diamond Reserve
+                      {data.certificateBrand}
                     </span>
                   </div>
-                  <StatusPill label={DUMMY.back.status} />
+                  <StatusPill label={data.back.status} theme={theme} />
                 </div>
                 {/* Notched hairline divider */}
                 <div className="relative mt-2 flex items-center">
-                  <span className="h-px flex-1 bg-slate-900/15" />
-                  <span className="mx-1.5 text-[8px] text-slate-500">◆</span>
-                  <span className="h-px flex-1 bg-slate-900/15" />
+                  <span
+                    className="h-px flex-1"
+                    style={{ background: theme.hairline }}
+                  />
+                  <span
+                    className="mx-1.5 text-[8px]"
+                    style={{ color: theme.label }}
+                  >
+                    ◆
+                  </span>
+                  <span
+                    className="h-px flex-1"
+                    style={{ background: theme.hairline }}
+                  />
                 </div>
               </div>
 
               {/* Investor hero */}
               <div>
-                <div className="text-[9px] uppercase tracking-[0.24em] text-slate-500">
+                <div
+                  className="text-[9px] uppercase tracking-[0.24em]"
+                  style={{ color: theme.label }}
+                >
                   Certificate Holder
                 </div>
                 <div
                   className="mt-0.5 text-[22px] font-semibold leading-none tracking-tight"
+                  style={gradientText(theme.gradTitle)}
+                >
+                  {data.back.investorName}
+                </div>
+                <div
+                  className="mt-2 inline-flex rounded-md border px-2 py-0.5 backdrop-blur-[2px]"
                   style={{
-                    background:
-                      "linear-gradient(180deg,#1e293b 0%,#64748b 100%)",
-                    WebkitBackgroundClip: "text",
-                    backgroundClip: "text",
-                    color: "transparent",
+                    borderColor: theme.serialBorder,
+                    background: theme.serialBg,
                   }}
                 >
-                  {DUMMY.back.investorName}
-                </div>
-                <div className="mt-2 inline-flex rounded-md border border-slate-900/15 bg-white/30 px-2 py-0.5 backdrop-blur-[2px]">
-                  <span className="font-mono text-[10px] tracking-[0.24em] text-slate-800">
-                    {DUMMY.back.investmentId}
+                  <span
+                    className="font-mono text-[10px] tracking-[0.24em]"
+                    style={{ color: theme.serialInk }}
+                  >
+                    {data.back.investmentId}
                   </span>
                 </div>
               </div>
 
               {/* Timeline strip */}
               <div className="relative">
-                <div className="mb-1 flex items-center justify-between text-[8px] uppercase tracking-[0.24em] text-slate-500">
+                <div
+                  className="mb-1 flex items-center justify-between text-[8px] uppercase tracking-[0.24em]"
+                  style={{ color: theme.label }}
+                >
                   <span>Start</span>
                   <span>Maturity</span>
                 </div>
                 <div className="relative h-[10px]">
                   <span
                     className="absolute left-0 right-0 top-1/2 h-[2px] -translate-y-1/2 rounded-full"
+                    style={{ background: theme.timelineLine, opacity: 0.55 }}
+                  />
+                  <span
+                    className="absolute left-0 top-1/2 h-[8px] w-[8px] -translate-x-1/2 -translate-y-1/2 rounded-full"
                     style={{
-                      background:
-                        "linear-gradient(90deg,#334155 0%,#7dd3fc 50%,#334155 100%)",
-                      opacity: 0.55,
+                      background: theme.timelineNode,
+                      boxShadow: `0 0 0 2px ${theme.timelineNodeRing}`,
                     }}
                   />
-                  <span className="absolute left-0 top-1/2 h-[8px] w-[8px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-800 ring-2 ring-white/70" />
-                  <span className="absolute right-0 top-1/2 h-[8px] w-[8px] translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-800 ring-2 ring-white/70" />
+                  <span
+                    className="absolute right-0 top-1/2 h-[8px] w-[8px] translate-x-1/2 -translate-y-1/2 rounded-full"
+                    style={{
+                      background: theme.timelineNode,
+                      boxShadow: `0 0 0 2px ${theme.timelineNodeRing}`,
+                    }}
+                  />
                   <motion.span
                     className="absolute top-1/2 h-[10px] w-[10px] -translate-y-1/2 rounded-full"
                     style={{
                       left: "45%",
-                      background: "#0ea5e9",
-                      boxShadow:
-                        "0 0 0 3px rgba(14,165,233,0.25), 0 0 8px rgba(14,165,233,0.6)",
+                      background: theme.timelineDot,
+                      boxShadow: theme.timelineDotShadow,
                     }}
                     animate={{ opacity: [0.7, 1, 0.7], scale: [0.9, 1.1, 0.9] }}
                     transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
                   />
                 </div>
-                <div className="mt-1 flex items-center justify-between text-[10px] font-medium text-slate-900">
-                  <span>{DUMMY.back.startDate}</span>
-                  <span>{DUMMY.back.maturityDate}</span>
+                <div
+                  className="mt-1 flex items-center justify-between text-[10px] font-medium"
+                  style={{ color: theme.value }}
+                >
+                  <span>{data.back.startDate}</span>
+                  <span>{data.back.maturityDate}</span>
                 </div>
               </div>
 
               {/* Expected return highlight */}
               <div className="flex items-end justify-between">
                 <div>
-                  <div className="text-[9px] uppercase tracking-[0.24em] text-slate-500">
+                  <div
+                    className="text-[9px] uppercase tracking-[0.24em]"
+                    style={{ color: theme.label }}
+                  >
                     Issued
                   </div>
-                  <div className="text-[10px] text-slate-700">
-                    {DUMMY.back.startDate} · Non-transferable
+                  <div className="text-[10px]" style={{ color: theme.issued }}>
+                    {data.back.startDate} · Non-transferable
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[9px] uppercase tracking-[0.2em] text-slate-500">
+                  <div
+                    className="text-[9px] uppercase tracking-[0.2em]"
+                    style={{ color: theme.label }}
+                  >
                     Expected Return
                   </div>
                   <div className="flex items-center justify-end gap-1">
-                    <span className="text-[11px] text-emerald-600">▲</span>
+                    <span className="text-[11px]" style={{ color: theme.accent }}>
+                      ▲
+                    </span>
                     <span
                       className="text-[18px] font-semibold leading-none"
-                      style={{
-                        background:
-                          "linear-gradient(180deg,#334155 0%,#0f172a 100%)",
-                        WebkitBackgroundClip: "text",
-                        backgroundClip: "text",
-                        color: "transparent",
-                      }}
+                      style={gradientText(theme.gradReturn)}
                     >
-                      {DUMMY.back.expectedReturn}
+                      {data.back.expectedReturn}
                     </span>
                   </div>
                 </div>
               </div>
 
               {/* Footer: signature + seal */}
-              <div className="flex items-end justify-between border-t border-slate-900/10 pt-2">
+              <div
+                className="flex items-end justify-between border-t pt-2"
+                style={{ borderColor: theme.hairlineSoft }}
+              >
                 <div>
                   <div
-                    className="border-b border-slate-900/25 pb-0.5 font-serif text-[17px] italic leading-none text-slate-800/85"
-                    style={{ letterSpacing: "0.02em" }}
+                    className="border-b pb-0.5 font-serif text-[17px] italic leading-none"
+                    style={{
+                      letterSpacing: "0.02em",
+                      color: theme.signatureInk,
+                      borderColor: theme.signatureRule,
+                    }}
                   >
-                    John Carter
+                    {data.back.investorName}
                   </div>
-                  <div className="mt-1 text-[8px] uppercase tracking-[0.24em] text-slate-500">
+                  <div
+                    className="mt-1 text-[8px] uppercase tracking-[0.24em]"
+                    style={{ color: theme.label }}
+                  >
                     Authorized Signature
                   </div>
                 </div>
@@ -607,8 +625,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
                     aria-hidden
                     className="absolute inset-0 rounded-full"
                     style={{
-                      backgroundImage:
-                        "conic-gradient(from 0deg,#ffffff,#dfeaf7,#e6dff7,#f7dfe9,#fef2dc,#e6f7ef,#dff0fa,#ffffff)",
+                      backgroundImage: theme.sealRing,
                       padding: 1,
                       WebkitMask:
                         "radial-gradient(circle, transparent 55%, black 56%)",
@@ -618,12 +635,11 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
                     transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                   />
                   <div
-                    className="absolute inset-[3px] grid place-items-center rounded-full text-[12px] text-slate-800"
+                    className="absolute inset-[3px] grid place-items-center rounded-full text-[12px]"
                     style={{
-                      background:
-                        "radial-gradient(circle at 35% 30%, #ffffff 0%, #dbe6f3 70%, #b8c7dc 100%)",
-                      boxShadow:
-                        "inset 0 0 0 1px rgba(255,255,255,0.7), inset 0 -2px 4px rgba(90,120,160,0.35)",
+                      background: theme.sealFace,
+                      boxShadow: theme.sealShadow,
+                      color: theme.sealInk,
                     }}
                   >
                     ◆
@@ -636,8 +652,7 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
                 aria-hidden
                 className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/2"
                 style={{
-                  background:
-                    "linear-gradient(115deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.22) 45%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 100%)",
+                  background: theme.shineBack,
                   filter: "blur(2px)",
                   mixBlendMode: "screen",
                 }}
@@ -652,13 +667,20 @@ export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps)
             </div>
           </CardFace>
 
-
           {/* Dynamic lighting overlay (front-facing highlight) */}
-          <DynamicHighlight rx={springX} ry={springY} />
+          <DynamicHighlight rx={springX} ry={springY} theme={theme} />
         </motion.div>
       </motion.div>
     </div>
   );
 }
 
-export default DiamondInvestmentCard;
+export interface DiamondInvestmentCardProps {
+  className?: string;
+}
+
+export function DiamondInvestmentCard({ className }: DiamondInvestmentCardProps) {
+  return <InvestmentCard variant="diamond" className={className} />;
+}
+
+export default InvestmentCard;
