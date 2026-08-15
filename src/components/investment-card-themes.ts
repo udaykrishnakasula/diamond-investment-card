@@ -34,6 +34,11 @@ export interface CardTheme {
   gradReturn: string;
   gradTitle: string;
   /** Typography + hairline colours. */
+  brandInk: string;
+  label: string;
+  sublabel: string;
+  value: string;
+  issued: string;
   strong: string;
   body: string;
   muted: string;
@@ -107,6 +112,11 @@ const DIAMOND: CardTheme = {
   gradAmount: "linear-gradient(180deg,#1e293b 0%,#64748b 100%)",
   gradReturn: "linear-gradient(180deg,#334155 0%,#0f172a 100%)",
   gradTitle: "linear-gradient(180deg,#1e293b 0%,#64748b 100%)",
+  brandInk: "#1e293b",
+  label: "#64748b",
+  sublabel: "#475569",
+  value: "#0f172a",
+  issued: "#334155",
   strong: "#0f172a",
   body: "#334155",
   muted: "#64748b",
@@ -180,6 +190,11 @@ const SILVER: CardTheme = {
   gradAmount: "linear-gradient(180deg,#1f2937 0%,#7b8a9c 100%)",
   gradReturn: "linear-gradient(180deg,#3b4859 0%,#111827 100%)",
   gradTitle: "linear-gradient(180deg,#1f2937 0%,#7b8a9c 100%)",
+  brandInk: "#1f2937",
+  label: "#64748b",
+  sublabel: "#4b5563",
+  value: "#111827",
+  issued: "#374151",
   strong: "#111827",
   body: "#374151",
   muted: "#64748b",
@@ -251,6 +266,11 @@ const GOLD: CardTheme = {
   gradAmount: "linear-gradient(180deg,#3f2c11 0%,#a67c33 100%)",
   gradReturn: "linear-gradient(180deg,#5a3f18 0%,#2e2009 100%)",
   gradTitle: "linear-gradient(180deg,#3f2c11 0%,#a67c33 100%)",
+  brandInk: "#3f2c11",
+  label: "#7c5c26",
+  sublabel: "#6b4c1e",
+  value: "#33240c",
+  issued: "#5a4118",
   strong: "#33240c",
   body: "#5a4118",
   muted: "#7c5c26",
@@ -324,6 +344,11 @@ const PLATINUM: CardTheme = {
   gradAmount: "linear-gradient(180deg,#ffffff 0%,#98a6b4 100%)",
   gradReturn: "linear-gradient(180deg,#f1f5f9 0%,#a8b4c0 100%)",
   gradTitle: "linear-gradient(180deg,#ffffff 0%,#98a6b4 100%)",
+  brandInk: "#e2e8f0",
+  label: "#94a3b8",
+  sublabel: "#b0bcc9",
+  value: "#f8fafc",
+  issued: "#cbd5e1",
   strong: "#f1f5f9",
   body: "#cbd5e1",
   muted: "#94a3b8",
